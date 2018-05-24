@@ -17,7 +17,7 @@ def getDataFile(sampleId, channelId):
     folderName = "Th.C. 0000" + str(sampleId)
     fileName = "CH" + str(channelId) + "_0" + str(channelId) + "h.txt"
     
-    fileDir = root + "/Group 5/" + folderName + "/" + fileName
+    fileDir = "Group 5/" + folderName + "/" + fileName
     try:
         return open(fileDir, 'r')
     except OSError:
@@ -98,4 +98,4 @@ for sampleId in range(1, numberOfSamples + 1):
 
 ch1 = data['sample1']['ch1']
 
-makePlot(6)
+makePlot(1)
