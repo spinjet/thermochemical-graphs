@@ -3,6 +3,8 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 
+#edit di fabio
+
 root = os.getcwd() # base directory
 numberOfSamples = 6 # total number of sampling procedures
 
@@ -13,10 +15,10 @@ def getDataFile(sampleId, channelId):
     containing the channelId-th data from the sampleId-th
     experimental sampling
     '''
-    
+
     folderName = "Th.C. 0000" + str(sampleId)
     fileName = "CH" + str(channelId) + "_0" + str(channelId) + "h.txt"
-    
+
     fileDir = "Group 5/" + folderName + "/" + fileName
     try:
         return open(fileDir, 'r')
@@ -27,7 +29,7 @@ def makePlot(sampleId, t0=0, tf=None):
     '''
     Function to produce plots.
     It's possible to specify
-    an initial time and final time of sampling if 
+    an initial time and final time of sampling if
     desired. Otherwise it defaults to all the available
     timesteps.
     '''
@@ -35,7 +37,7 @@ def makePlot(sampleId, t0=0, tf=None):
 
     plt.subplot(2,1,1)
     ch = data['sample' + str(sampleId)]['ch1']
-    
+
     if tf is not None:
         b = ch[0].index(float(t0))
         e = ch[0].index(float(tf))
@@ -91,9 +93,9 @@ for sampleId in range(1, numberOfSamples + 1):
 
             t.append(float(temp[0]))
             d.append(float(temp[1]))
-        
+
         ch['ch' + str(chanId)] = [t, d]
-    
+
     data['sample' + str(sampleId)] = ch
 
 ch1 = data['sample1']['ch1']
