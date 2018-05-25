@@ -3,7 +3,6 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 
-root = os.getcwd() # base directory
 numberOfSamples = 6 # total number of sampling procedures
 
 
@@ -98,4 +97,8 @@ for sampleId in range(1, numberOfSamples + 1):
 
 ch1 = data['sample1']['ch1']
 
-makePlot(1)
+# first graph
+# makePlot(1, 80, 115)
+
+# second graph
+makePlot(2, 94, 127)
