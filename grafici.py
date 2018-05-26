@@ -12,29 +12,52 @@ def getDataFile(sampleId, channelId):
     containing the channelId-th data from the sampleId-th
     experimental sampling
     '''
-    
+
     folderName = "Th.C. 0000" + str(sampleId)
     fileName = "CH" + str(channelId) + "_0" + str(channelId) + "h.txt"
-    
+
     fileDir = "Group 5/" + folderName + "/" + fileName
     try:
         return open(fileDir, 'r')
     except OSError:
         print("Cannot find file: " + fileName)
 
-def makePlot(sampleId, t0=0, tf=None):
+def sliceData(sampleId, t0, tf):
     '''
-    Function to produce plots.
-    It's possible to specify
-    an initial time and final time of sampling if 
-    desired. Otherwise it defaults to all the available
-    timesteps.
+    Function to slice a sample given an initial time t0
+    and a final time tf. Returns a dictionary of the
+    sample with the sliced data.
+    '''
+    slicedData = {'ch1':[], 'ch2':[]}
+
+    for k, ch in data['sample' + str(sampleId)].items():
+
+        # begin and end positions
+        b = ch[0].index(float(t0))
+        e = ch[0].index(float(tf))
+
+        t = ch[0][b:e]
+        d = ch[1][b:e]
+
+        slicedData[k] = [t, d]
+
+    return slicedData
+
+
+
+def makePlot(sampleDict, t0=0, tf=None):
+    '''
+    Function to produce plots by passing a sample dictionary.
+    It's possible to specify an initial time and
+    final time of sampling if desired. Otherwise it defaults
+    to all the available timesteps.
     '''
 
 
     plt.subplot(2,1,1)
-    ch = data['sample' + str(sampleId)]['ch1']
-    
+    # ch = data['sample' + str(sampleId)]['ch1']
+    ch = sampleDict['ch1']
+
     if tf is not None:
         b = ch[0].index(float(t0))
         e = ch[0].index(float(tf))
@@ -52,7 +75,8 @@ def makePlot(sampleId, t0=0, tf=None):
     plt.ylabel('Temperature [K]')
 
     plt.subplot(2,1,2)
-    ch = data['sample' + str(sampleId)]['ch2']
+    #ch = data['sample' + str(sampleId)]['ch2']
+    ch = sampleDict['ch2']
 
     if tf is not None:
         b = ch[0].index(float(t0))
@@ -66,6 +90,8 @@ def makePlot(sampleId, t0=0, tf=None):
 
     plt.plot(t, d)
     plt.grid()
+    plt.xlabel('Time [s]')
+    plt.ylabel('Pulses')
     plt.show(block=False)
     plt.pause(10)
 
@@ -90,15 +116,21 @@ for sampleId in range(1, numberOfSamples + 1):
 
             t.append(float(temp[0]))
             d.append(float(temp[1]))
-        
+
         ch['ch' + str(chanId)] = [t, d]
-    
+
     data['sample' + str(sampleId)] = ch
 
 ch1 = data['sample1']['ch1']
 
+sample1 = sliceData(1, 80, 115)
+makePlot(sample1)
+
 # first graph
-# makePlot(1, 80, 115)
+# makePlot(data['sample1'], 80, 115)
 
 # second graph
-makePlot(2, 94, 127)
+# makePlot(data['sample2'], 94, 127)
+
+# third graph
+# makePlot(data['sample3'],87, 123)
