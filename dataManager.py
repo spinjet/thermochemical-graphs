@@ -1,10 +1,7 @@
 import os
 import sys
-import numpy as np
+import json
 import matplotlib.pyplot as plt
-
-numberOfSamples = 6 # total number of sampling procedures
-
 
 def getDataFile(sampleId, channelId):
     '''
@@ -22,7 +19,7 @@ def getDataFile(sampleId, channelId):
     except OSError:
         print("Cannot find file: " + fileName)
 
-def sliceData(sampleId, t0, tf):
+def sliceData(data, sampleId, t0, tf):
     '''
     Function to slice a sample given an initial time t0
     and a final time tf. Returns a dictionary of the
@@ -43,7 +40,56 @@ def sliceData(sampleId, t0, tf):
 
     return slicedData
 
+def saveData(sample, sampleID):
+    '''
+    Dumps the sample dictionary data into a .json file
+    so it can be opened again
+    '''
+    with open("sample{}.json".format(sampleID), 'w') as fp:
+        json.dump(sample, fp, indent=4)
 
+def loadData(jsonFile):
+    '''
+    Loads saved sample data from a .json file.
+    Argument must be a string containing the filename.
+    '''
+    try:
+        with open(jsonFile, 'r') as fp:
+            data = json.load(fp)
+        return data
+    except OSError:
+        print("Cannot find file " + jsonFile)
+
+
+def loadRawData(numberOfSamples):
+    '''
+    Returns a dictionary of the loaded data, whose
+    stucture is as follows:
+    { sample: { ch1: [t, d], ...}, ... }
+    '''
+
+    data = dict([("sample" + str(a), []) for a in range(1, numberOfSamples)])
+
+    for sampleId in range(1, numberOfSamples + 1):
+        ch = {'ch1': [], 'ch2':[]}
+
+        for chanId in range(1, 3):
+            t = []
+            d = []
+
+            for line in getDataFile(sampleId, chanId):
+
+                temp = line.split('\t')
+                temp[1] = temp[1].replace('\r\n','')
+
+                t.append(float(temp[0]))
+                d.append(float(temp[1]))
+
+            ch['ch' + str(chanId)] = [t, d]
+
+        data['sample' + str(sampleId)] = ch
+
+    return data
 
 def makePlot(sampleDict, t0=0, tf=None):
     '''
@@ -96,35 +142,12 @@ def makePlot(sampleDict, t0=0, tf=None):
     plt.pause(10)
 
 
+data = loadRawData(6)
+sample1 = sliceData(data, 1, 80, 115)
+saveData(sample1, 1)
 
-# create an empty dictionary whose keys are strings "sample#"
-# and their values are currently empty lists
-
-data = dict([("sample" + str(a), []) for a in range(1, numberOfSamples)])
-
-for sampleId in range(1, numberOfSamples + 1):
-    ch = {'ch1': [], 'ch2':[]}
-
-    for chanId in range(1, 3):
-        t = []
-        d = []
-
-        for line in getDataFile(sampleId, chanId):
-
-            temp = line.split('\t')
-            temp[1] = temp[1].replace('\r\n','')
-
-            t.append(float(temp[0]))
-            d.append(float(temp[1]))
-
-        ch['ch' + str(chanId)] = [t, d]
-
-    data['sample' + str(sampleId)] = ch
-
-ch1 = data['sample1']['ch1']
-
-sample1 = sliceData(1, 80, 115)
-makePlot(sample1)
+dSample1 = loadData("sample1.json")
+makePlot(dSample1)
 
 # first graph
 # makePlot(data['sample1'], 80, 115)
