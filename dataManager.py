@@ -109,7 +109,7 @@ def processData(dataDict, sliceDataList, fileName):
         outData = sliceData(dataDict, sampleId, sliceDataList[i][0], sliceDataList[i][1])
         saveData(outData, fileName + "{}_{}.json".format(sampleId, indexes[i]))
 
-def makePlot(sampleDict, t0=0, tf=None, blocking=True):
+def makePlot(sampleDict, t0=0, tf=None, blocking=True, nameFile=None):
     '''
     Function to produce plots by passing a sample dictionary.
     It's possible to specify an initial time and
@@ -117,7 +117,7 @@ def makePlot(sampleDict, t0=0, tf=None, blocking=True):
     to all the available timesteps.
     '''
 
-
+    plt.figure()
     plt.subplot(2,1,1)
     # ch = data['sample' + str(sampleId)]['ch1']
     ch = sampleDict['ch1']
@@ -157,6 +157,9 @@ def makePlot(sampleDict, t0=0, tf=None, blocking=True):
     plt.xlabel('Time [s]')
     plt.ylabel('Pulses')
     plt.show(block=blocking)
+    if nameFile is not None:
+        nameFile = nameFile.strip(".json")
+        plt.savefig(nameFile + ".png")
 
 def main():
     data = loadRawData(6)
@@ -179,7 +182,7 @@ def main():
         3,
         (2, 3),
         (46, 82),
-        (82, 112)
+        (82, 122)
     ]
 
     slice4 = [
@@ -208,7 +211,13 @@ def main():
     for sliceL in processList:
         processData(data, sliceL, "measure")
 
-    os.listdir()
+    os.chdir("..")
+    dataFiles = os.listdir("data")
+    print(os.getcwd())
+    for dataF in dataFiles:
+        d = loadData("data/" + dataF)
+        makePlot(d, blocking=False, nameFile="plots/" + dataF)
+
 
 
 
