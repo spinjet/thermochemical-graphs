@@ -40,12 +40,12 @@ def sliceData(data, sampleId, t0, tf):
 
     return slicedData
 
-def saveData(sample, sampleID):
+def saveData(sample, nameFile):
     '''
     Dumps the sample dictionary data into a .json file
     so it can be opened again
     '''
-    with open("sample{}.json".format(sampleID), 'w') as fp:
+    with open(nameFile, 'w') as fp:
         json.dump(sample, fp, indent=4)
 
 def loadData(jsonFile):
@@ -91,7 +91,25 @@ def loadRawData(numberOfSamples):
 
     return data
 
-def makePlot(sampleDict, t0=0, tf=None):
+def processData(dataDict, sliceDataList, fileName):
+    '''
+    Processes the raw data dictionary and saves into a .json file the
+    processed data following the instructions from the sliceDataList.
+    sliceDataList = [
+        integer value of the Nth of sample campaign
+        (tuple with the n's samples of the meaurement campaign),
+        (tuple with the beginning and end time for slicing),
+        ...
+    ]
+    '''
+    sampleId = sliceDataList.pop(0)
+    indexes = sliceDataList.pop(0)
+
+    for i in range(0, len(indexes)):
+        outData = sliceData(dataDict, sampleId, sliceDataList[i][0], sliceDataList[i][1])
+        saveData(outData, fileName + "{}_{}.json".format(sampleId, indexes[i]))
+
+def makePlot(sampleDict, t0=0, tf=None, blocking=True):
     '''
     Function to produce plots by passing a sample dictionary.
     It's possible to specify an initial time and
@@ -138,22 +156,61 @@ def makePlot(sampleDict, t0=0, tf=None):
     plt.grid()
     plt.xlabel('Time [s]')
     plt.ylabel('Pulses')
-    plt.show(block=False)
-    plt.pause(10)
+    plt.show(block=blocking)
+
+def main():
+    data = loadRawData(6)
+
+    slice1 = [
+        1,
+        (2, 3),
+        (37, 75),
+        (75, 114)
+    ]
+
+    slice2 = [
+        2,
+        (2, 3),
+        (47, 86),
+        (91,130)
+    ]
+
+    slice3 = [
+        3,
+        (2, 3),
+        (46, 82),
+        (82, 112)
+    ]
+
+    slice4 = [
+        4,
+        (3, 4),
+        (67, 100),
+        (100, 131)
+    ]
+
+    slice5 = [
+        5,
+        (2, 3),
+        (60, 100),
+        (100, 132)
+    ]
+
+    slice6 = [
+        6,
+        (4,),
+        (150, 183)
+    ]
+
+    processList = [slice1, slice2, slice3, slice4, slice5, slice6]
+
+    os.chdir("data")
+    for sliceL in processList:
+        processData(data, sliceL, "measure")
+
+    os.listdir()
 
 
-data = loadRawData(6)
-sample1 = sliceData(data, 1, 80, 115)
-saveData(sample1, 1)
 
-dSample1 = loadData("sample1.json")
-makePlot(dSample1)
-
-# first graph
-# makePlot(data['sample1'], 80, 115)
-
-# second graph
-# makePlot(data['sample2'], 94, 127)
-
-# third graph
-# makePlot(data['sample3'],87, 123)
+if __name__ == "__main__":
+    main()

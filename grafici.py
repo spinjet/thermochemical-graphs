@@ -58,6 +58,8 @@ def makePlot(sampleDict, t0=0, tf=None):
     # ch = data['sample' + str(sampleId)]['ch1']
     ch = sampleDict['ch1']
 
+    maxTemp = np.ones(len(ch[0]))
+
     if tf is not None:
         b = ch[0].index(float(t0))
         e = ch[0].index(float(tf))
@@ -69,7 +71,7 @@ def makePlot(sampleDict, t0=0, tf=None):
         d = ch[1]
 
 
-    plt.plot(t, d)
+    plt.plot(t, d, t, 1500 * maxTemp)
     plt.grid()
     plt.xlabel('Time [s]')
     plt.ylabel('Temperature [K]')
@@ -92,8 +94,7 @@ def makePlot(sampleDict, t0=0, tf=None):
     plt.grid()
     plt.xlabel('Time [s]')
     plt.ylabel('Pulses')
-    plt.show(block=False)
-    plt.pause(10)
+    plt.show()
 
 
 
@@ -123,8 +124,9 @@ for sampleId in range(1, numberOfSamples + 1):
 
 ch1 = data['sample1']['ch1']
 
-sample1 = sliceData(1, 80, 115)
-makePlot(sample1)
+#sample1 = sliceData(1, 80, 115)
+
+makePlot(data['sample6'])
 
 # first graph
 # makePlot(data['sample1'], 80, 115)
