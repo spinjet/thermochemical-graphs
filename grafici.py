@@ -70,6 +70,38 @@ def plotData(dataDict, scaleFactor, title, centering=None, blocking=True, fileNa
     plt.savefig("plots/" + fileName + ".png")
 
 
+def subPlotter(plottingTuple):
+    plotIndex = [3, 4, 2, 1]
+    fig = plt.figure(figsize=(12, 10))
+    for index in range(0, 4):
+        pTuple = plottingTuple[index]
+        dataDict = pTuple[1]
+        subtitle = pTuple[0]
+        centering = pTuple[2]
+
+        plt.subplot(2, 2, plotIndex[index])
+
+        dataArray = np.array([
+            dataDict['ch1'][0],
+            dataDict['ch1'][1]
+        ])
+
+        Xval, Yval = centerData(
+            dataArray, scaleFactor, centering)
+
+        plt.plot(Xval, Yval)
+        plt.grid()
+
+        plt.title(subtitle)
+        plt.xlabel("X [mm]")
+        plt.ylabel("Temperature [K]")
+        plt.ylim((0, 1600))
+        plt.xlim((-12, 12))
+
+    fig.show()
+    fig.savefig("plots/multiPlot.png")
+
+
 def getMeasures():
     '''
     Loads the .json measures from the data/ folder and packs them with their
@@ -121,10 +153,25 @@ def main():
         )
 
     #unpack the tuple and pass the arguments into the plotting function
+    subPlotData = []
+
     for element in structData:
-        print(element[2])
-        plotData(element[1], scaleFactor, element[0],
-                 element[2], blocking=False, fileName=element[3])
+        # print(element[2])
+        # plotData(element[1], scaleFactor, element[0],
+        #          element[2], blocking=False, fileName=element[3])
+
+        if "measure6_4" in element[3]:
+            subPlotData.append(element)
+        elif "measure1_2" in element[3]:
+            subPlotData.append(element)
+        elif "measure2_2" in element[3]:
+            subPlotData.append(element)
+        elif "measure3_2" in element[3]:
+            subPlotData.append(element)
+
+    print(subPlotData)
+
+    subPlotter(tuple(subPlotData))
 
 
 if __name__ == "__main__":
