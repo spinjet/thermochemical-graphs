@@ -1,7 +1,7 @@
 import os
-import sys
 import json
 import matplotlib.pyplot as plt
+
 
 def getDataFile(sampleId, channelId):
     '''
@@ -19,13 +19,14 @@ def getDataFile(sampleId, channelId):
     except OSError:
         print("Cannot find file: " + fileName)
 
+
 def sliceData(data, sampleId, t0, tf):
     '''
     Function to slice a sample given an initial time t0
     and a final time tf. Returns a dictionary of the
     sample with the sliced data.
     '''
-    slicedData = {'ch1':[], 'ch2':[]}
+    slicedData = {'ch1': [], 'ch2': []}
 
     for k, ch in data['sample' + str(sampleId)].items():
 
@@ -40,6 +41,7 @@ def sliceData(data, sampleId, t0, tf):
 
     return slicedData
 
+
 def saveData(sample, nameFile):
     '''
     Dumps the sample dictionary data into a .json file
@@ -47,6 +49,7 @@ def saveData(sample, nameFile):
     '''
     with open(nameFile, 'w') as fp:
         json.dump(sample, fp, indent=4)
+
 
 def loadData(jsonFile):
     '''
@@ -71,7 +74,7 @@ def loadRawData(numberOfSamples):
     data = dict([("sample" + str(a), []) for a in range(1, numberOfSamples)])
 
     for sampleId in range(1, numberOfSamples + 1):
-        ch = {'ch1': [], 'ch2':[]}
+        ch = {'ch1': [], 'ch2': []}
 
         for chanId in range(1, 3):
             t = []
@@ -80,7 +83,7 @@ def loadRawData(numberOfSamples):
             for line in getDataFile(sampleId, chanId):
 
                 temp = line.split('\t')
-                temp[1] = temp[1].replace('\r\n','')
+                temp[1] = temp[1].replace('\r\n', '')
 
                 t.append(float(temp[0]))
                 d.append(float(temp[1]))
@@ -90,6 +93,7 @@ def loadRawData(numberOfSamples):
         data['sample' + str(sampleId)] = ch
 
     return data
+
 
 def processData(dataDict, sliceDataList, fileName):
     '''
@@ -106,8 +110,10 @@ def processData(dataDict, sliceDataList, fileName):
     indexes = sliceDataList.pop(0)
 
     for i in range(0, len(indexes)):
-        outData = sliceData(dataDict, sampleId, sliceDataList[i][0], sliceDataList[i][1])
+        outData = sliceData(dataDict, sampleId,
+                            sliceDataList[i][0], sliceDataList[i][1])
         saveData(outData, fileName + "{}_{}.json".format(sampleId, indexes[i]))
+
 
 def makePlot(sampleDict, t0=0, tf=None, blocking=True, nameFile=None):
     '''
@@ -118,7 +124,7 @@ def makePlot(sampleDict, t0=0, tf=None, blocking=True, nameFile=None):
     '''
 
     plt.figure()
-    plt.subplot(2,1,1)
+    plt.subplot(2, 1, 1)
     # ch = data['sample' + str(sampleId)]['ch1']
     ch = sampleDict['ch1']
 
@@ -132,14 +138,13 @@ def makePlot(sampleDict, t0=0, tf=None, blocking=True, nameFile=None):
         t = ch[0]
         d = ch[1]
 
-
     plt.plot(t, d)
     plt.grid()
     plt.xlabel('Time [s]')
     plt.ylabel('Temperature [K]')
 
-    plt.subplot(2,1,2)
-    #ch = data['sample' + str(sampleId)]['ch2']
+    plt.subplot(2, 1, 2)
+    # ch = data['sample' + str(sampleId)]['ch2']
     ch = sampleDict['ch2']
 
     if tf is not None:
@@ -161,34 +166,35 @@ def makePlot(sampleDict, t0=0, tf=None, blocking=True, nameFile=None):
         nameFile = nameFile.strip(".json")
         plt.savefig(nameFile + ".png")
 
+
 def main():
     data = loadRawData(6)
 
     slice1 = [
         1,
         (2, 3),
-        (37, 75),
-        (75, 114)
+        (40, 75),
+        (80, 114)
     ]
 
     slice2 = [
         2,
         (2, 3),
-        (47, 86),
-        (91,130)
+        (50, 86),
+        (91, 128)
     ]
 
     slice3 = [
         3,
         (2, 3),
-        (46, 82),
-        (82, 122)
+        (47, 82),
+        (85, 122)
     ]
 
     slice4 = [
         4,
         (3, 4),
-        (67, 100),
+        (67, 96),
         (100, 131)
     ]
 
@@ -219,7 +225,7 @@ def main():
         makePlot(d, blocking=False, nameFile="plots/" + dataF)
 
 
-
-
 if __name__ == "__main__":
     main()
+    d = loadData("data/measure6_4.json")
+    makePlot(d, blocking=True)
