@@ -10,7 +10,7 @@ scaleFactor = 0.5 * 1.2
 def centerData(dataArray, scaleFactor, CenterX=None):
     '''
     Function that returns data centered on the max of the diagram.
-    CenterX value should be given in the original X scale
+    CenterX value should be given in the original X scale.
     '''
     Yval = dataArray[1, :]
     Xval = dataArray[0, :] - dataArray[0, -1]
@@ -21,8 +21,15 @@ def centerData(dataArray, scaleFactor, CenterX=None):
     else:
         CenterIndex = int(np.argwhere(dataArray[0, :] == CenterX))
 
+    # the scaled numpy array is then centered
+    # depending on what side is the longest
     Xcentr = Xval[CenterIndex]
-    deltaX = abs(Xcentr - Xval[-1])
+
+    if CenterIndex < (len(Xval) / 2):
+        deltaX = abs(Xcentr - Xval[-1])
+    else:
+        deltaX = abs(Xcentr - Xval[0])
+
     Xval += deltaX
 
     Xval = Xval[0: CenterIndex * 2]
@@ -31,8 +38,16 @@ def centerData(dataArray, scaleFactor, CenterX=None):
     return (Xval, Yval)
 
 
-def plotData(dataDict, scaleFactor, name, centering=None):
-
+def plotData(dataDict, scaleFactor, title, centering=None, blocking=True, fileName=None):
+    '''
+    Plot function. Arguments are the original data dictionary dataDict,
+    scaleFactor is the x-axis scaling factor,
+    title the graph title,
+    centering is a float value for the x-axis value in which center the graph,
+    blocking is a bool to make the execution pause when a plot is open,
+    fileName if set saves the plot as a .png file in the plots folder with the provided name.
+    '''
+    # pack the dicitonary data into an numpy matrix
     dataArray = np.array([
         dataDict['ch1'][0],
         dataDict['ch1'][1]
@@ -45,45 +60,95 @@ def plotData(dataDict, scaleFactor, name, centering=None):
     plt.plot(Xval, Yval)
     plt.grid()
 
-    plt.title(name)
-    plt.xlabel("Position [mm]")
+    plt.title(title)
+    plt.xlabel("X [mm]")
     plt.ylabel("Temperature [K]")
     plt.ylim((0, 1600))
+    plt.xlim((-12, 12))
 
-    plt.show()
+    plt.show(block=blocking)
+    plt.savefig("plots/" + fileName + ".png")
 
 
 def getMeasures():
+    '''
+    Loads the .json measures from the data/ folder and packs them with their
+    filename inside a list of tuples, with the structure (fileName, dataDict)
+    '''
     fileNames = os.listdir("data/")
     titles = [name.strip(".json") for name in os.listdir("data/")]
     measuresList = []
 
     for i in range(0, len(titles)):
-        measuresList.append([titles[i], dm.loadData("data/" + fileNames[i])])
+        measuresList.append((titles[i], dm.loadData("data/" + fileNames[i])))
 
     return measuresList
 
 
-misL = getMeasures()
-k = 8
-# plotData(misL[k][1], scaleFactor, misL[k][0])
+def getGraphTitle(name):
+    '''
+    Gives the z position of the sampled data according to the original fileName.
+    '''
+    if "measure1" in name:
+        return "z = +5 mm"
+    elif "measure2" in name:
+        return "z = +10 mm"
+    elif "measure3" in name:
+        return "z = +15 mm"
+    else:
+        return "z = +0 mm"
 
 
-dataFiles = os.listdir("data/")
-measure1 = dm.loadData("data/measure5_2.json")
+def main():
+    misL = getMeasures()
+    structData = []
 
-m1ch1 = np.array([
-    measure1['ch1'][0],
-    measure1['ch1'][1]
-])
+    # set manually the centering positions for these sampled data
+    for name, dataD in misL:
+        if name == "measure4_3":
+            shift = 84
+        elif name == "measure4_4":
+            shift = 115
+        elif name == "measure6_4":
+            shift = 166.50
+        else:
+            shift = None
 
-Xval, Yval = (m1ch1[0, :], m1ch1[1, :])
+        # structure the data in a tuple to be appended in a list
+        structData.append(
+            ("Temperatura fiamma a " + getGraphTitle(name),
+             dataD, shift, name)
+        )
 
-# 6_4 : 166.50
-# 4_3 : 84.25
-# 4_4 : 114.85
+    #unpack the tuple and pass the arguments into the plotting function
+    for element in structData:
+        print(element[2])
+        plotData(element[1], scaleFactor, element[0],
+                 element[2], blocking=False, fileName=element[3])
 
 
-plt.plot(Xval, Yval)
-plt.grid()
-plt.show()
+if __name__ == "__main__":
+     main()
+
+# k = 8
+# # plotData(misL[k][1], scaleFactor, misL[k][0])
+#
+#
+# dataFiles = os.listdir("data/")
+# measure1 = dm.loadData("data/measure4_3.json")
+#
+# m1ch1 = np.array([
+#     measure1['ch1'][0],
+#     measure1['ch1'][1]
+# ])
+#
+# Xval, Yval = (m1ch1[0, :], m1ch1[1, :])
+#
+# # 6_4 : 166.50
+# # 4_3 : 84.25
+# # 4_4 : 114.85
+#
+#
+# plt.plot(Xval, Yval)
+# plt.grid()
+# plt.show()
